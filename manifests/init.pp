@@ -35,7 +35,29 @@
 #
 # Copyright 2011 Your name here, unless otherwise noted.
 #
-class jira {
 
+#This class depends heavily on the installer behaviour.
+#It's probably better to use this class to setup a jira instance to package up.
+class jira::installer {
+  $jiraVersion = "4.4.4-x32"
+  $jiraInstallerFileName = "atlassian-jira-${jiraVersion}.bin"
+  $jiraInstallDir = "/opt/atlassian/jira"
+
+  file { 'responsefile':
+    path    => "${jiraInstallDir}/.install4j/response.varfile",
+    content => template('jira/response.varfile.erb'),   
+  }
+  
+  file { 'atlassian-installer':
+    path   => "/tmp/${jiraInstallerFileName}",
+    source => "puppet:///modules/jira/${jiraInstallerFileName}",
+    mode   => 755,
+  }   
+
+  exec { 'atlassian-installer-exec':
+    command     => "/tmp/${jiraInstallerFileName}",
+    refreshonly => true,
+    subscribe   => File["atlassian-installer"],
+  } 
 
 }
